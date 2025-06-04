@@ -1,23 +1,31 @@
 import os
 import shutil
+from datetime import datetime
 
-def oraganize_files_by_type(folder_path):
-    pdf_folder=os.path.join(folder_path,"PDFs")
-    image_folder=os.path.join(folder_path,"Images")
-
-    os.makedirs(pdf_folder,exist_ok=True)
-    os.makedirs(image_folder,exist_ok=True)
+def organize_files_by_type_and_date(folder_path):
     for filename in os.listdir(folder_path):
-        file_path=os.path.join(folder_path,filename)
+        file_path = os.path.join(folder_path, filename)
 
         if os.path.isfile(file_path):
-            if filename.lower().endswith('.pdf'):
-                shutil.move(file_path,os.path.join(pdf_folder,filename))
-                print(f"Moved PDF :{filename}")
-            elif filename.lower().endswith(('.jpeg', '.png', '.jpg')):
-                shutil.move(file_path,os.path.join(image_folder,filename))
-                print(f"Moved Image : {filename}")
+            file_ext = filename.lower().split('.')[-1]
+
+            if file_ext in ['pdf', 'jpg', 'jpeg', 'png']:
+                # Type-based folder
+                type_folder = "PDFs" if file_ext == 'pdf' else "Images"
+
+                # Date-based folder
+                modified_time = os.path.getmtime(file_path)
+                mod_date = datetime.fromtimestamp(modified_time)
+                date_folder = f"{mod_date.year}_{mod_date.strftime('%B')}"
+
+                # Create final destination
+                destination_folder = os.path.join(folder_path, type_folder, date_folder)
+                os.makedirs(destination_folder, exist_ok=True)
+
+                # Move the file
+                shutil.move(file_path, os.path.join(destination_folder, filename))
+                print(f"Moved: {filename} → {type_folder}/{date_folder}/")
 
 # Test
 folder = os.path.expanduser('~/Downloads')
-oraganize_files_by_type(folder)
+organize_files_by_type_and_date(folder)
